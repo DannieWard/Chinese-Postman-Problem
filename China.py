@@ -23,14 +23,12 @@ def giveGraphEvenNodes(graph):
     """given a graph, it makes all of its nodes even by adding new edges between 
     the odd nodes. utilizes findOddNodes() function"""
     oddNodes=findOddNodes(graph)
-    for i in range(len(oddNodes)):
-        if len(oddNodes)==0:
-            break
-        node=oddNodes[i]
-        oddNodes.pop(i)
-        rand=random.randint(0, len(oddNodes)-1)
+    while len(oddNodes)!=0:
+        node=oddNodes[0]
+        rand=random.randint(1, len(oddNodes)-1)
         graph.add_edge(node, oddNodes[rand])
         oddNodes.pop(rand)
+        oddNodes.pop(0)
     return graph
 
 def buildEvenGraph(minNodes, maxNodes):
@@ -49,14 +47,9 @@ def buildEvenGraph(minNodes, maxNodes):
     giveGraphEvenNodes(G)
     nx.draw(G, with_labels=True)
     plt.show(G)
-    print(findOddNodes(G))
-    for i in G.nodes:
-        print(len(list(G.neighbors(i))))
-        if len(list(G.neighbors(i)))%2==1:
-            print(list(G.neighbors(i)))
     return G
 
-G=buildEvenGraph(4, 6)
+G=buildEvenGraph(6, 12)
 print(findOddNodes(G))
 print(G.edges)
 
