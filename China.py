@@ -52,6 +52,44 @@ def buildEvenGraph(minNodes, maxNodes):
     plt.show(G)
     return G
 
+def getStarterNode(graph):
+    """returns a random node from the graph"""
+    rand=random.randint(0, len(graph.nodes)-1)
+    starterNode=list(graph.nodes)[rand]
+    return starterNode
+
+def findEulerTour(graph):
+    """returns a list of edges in the euler tour"""
+    graphDegree=graph.degree
+    edges=graph.edges
+    graphEdges=[]
+    for i in edges:
+        graphEdges.append((i[0], i[1]))
+    starterNode=getStarterNode(graph)
+    path=[starterNode]
+    lastNode=None
+    totalPath=[]
+    while len(path)!=0:
+        nextNode=path[len(path)-1]
+        if graphDegree(nextNode)==0:
+            if lastNode!=None:
+                totalPath.append((lastNode, nextNode))
+            lastNode=nextNode
+            path.pop()
+        else:
+            rand=random.randint(0, len(edges(nextNode, keys=False))-1)
+            newEdge=list((edges(nextNode, keys=False)))[rand]
+            nextNextNode=newEdge[1]
+            path.append(nextNextNode)
+            graph.remove_edge(nextNode, nextNextNode)
+    return totalPath
+    
 G=buildEvenGraph(6, 12)
-print(findOddNodes(G))
-print(G.edges)
+for i in G.edges:
+    print(i)
+print()
+a=findEulerTour(G)
+for i in a:
+    print(i)
+#print(findOddNodes(G))
+#print(G.edges)
