@@ -58,38 +58,66 @@ def getStarterNode(graph):
     starterNode=list(graph.nodes)[rand]
     return starterNode
 
-def findEulerTour(graph):
-    """returns a list of edges in the euler tour"""
-    graphDegree=graph.degree
-    edges=graph.edges
-    graphEdges=[]
-    for i in edges:
-        graphEdges.append((i[0], i[1]))
-    starterNode=getStarterNode(graph)
-    path=[starterNode]
-    lastNode=None
-    totalPath=[]
-    while len(path)!=0:
-        nextNode=path[len(path)-1]
-        if graphDegree(nextNode)==0:
-            if lastNode!=None:
-                totalPath.append((lastNode, nextNode))
-            lastNode=nextNode
-            path.pop()
-        else:
-            rand=random.randint(0, len(edges(nextNode, keys=False))-1)
-            newEdge=list((edges(nextNode, keys=False)))[rand]
-            nextNextNode=newEdge[1]
-            path.append(nextNextNode)
-            graph.remove_edge(nextNode, nextNextNode)
-    return totalPath
+
+def findNewStarterNode(graph, visitedNodes):
+    """given a set of visited nodes, it returns one that still has available edges"""
+    node=random.choice(tuple(visitedNodes))
+    while graph.degree(node)==0:
+        node=random.choice(tuple(visitedNodes))
+    return node
+      
+def findCircle(graph, startNode):
+    """finds a circle in the graph and returns it as a list of nodes"""
+#    while graph.degree(starterNode)==0:
+#        starterNode=getStarterNode(graph)
+    path=[startNode]
+    firstNode=startNode
+    nextNode=None
+    while len(path)<2 or path[0]!=path[len(path)-1]: #continues adding nodes to circuit as long as the first node doesn't match the last
+        try:
+            rand=random.randint(0, len(graph.edges(firstNode, keys=False))-1) #if this fails, it means we've completed a cycle
+        except:
+            break
+        newEdge=list((graph.edges(firstNode, keys=False)))[rand] #finds a random edge connected to the node
+        nextNode=newEdge[1] #gets the next node
+        path.append(nextNode) #adds it to the path
+        graph.remove_edge(firstNode, nextNode) #removes the edge from the path
+        firstNode=nextNode
+    return path
+
+def findEuler(graph):
+    """creates an euler cycle of the given graph"""
+    pathList=[]
+    visitedNodeSet=set() #holds all the visited nodes
+    newPath=findCircle(graph, getStarterNode(graph)) #creates the first cycle
+    for i in newPath:
+        visitedNodeSet.add(i) #adds all the nodes to the visited nodes set
+    pathList.append(newPath) #adds the new path to the list of paths
+    while len(list(graph.edges))!=0: #as long as the graph has edges
+        startNode=findNewStarterNode(graph, visitedNodeSet) #find a valid start node (one that has been visited already)
+        newPath=findCircle(graph, startNode) #get a new path
+        pathList.append(newPath) #add it to the pathlist
+        for i in newPath:
+            visitedNodeSet.add(i) #add the visited nodes to the set
+    finalPath=[] #will hold the final, concatonated path
+    finalPath+=pathList.pop(0) #remove the first path and place it in the final path
+    startNodes=[] #will hold the starting nodes of all the paths
+    for i in pathList:
+        startNodes.append(i[0]) #adds to the list of the paths start nodes. we will use these to search for spots to combine the paths
+    while len(pathList)!=0: #while the pathlist still has paths in it
+        for i in finalPath: #go through every node in the final path
+            if i in startNodes: #if the node is the starting nodes of one of the paths we have
+                pos=startNodes.index(i)
+                finalPath=finalPath[0:finalPath.index(i)]+pathList.pop(pos)+finalPath[finalPath.index(i)+1:] #add the path in
+                startNodes.pop(pos) #remove it from the startNodes list so we aren't looking for it anymore
+    return finalPath
+    
     
 G=buildEvenGraph(6, 12)
 for i in G.edges:
     print(i)
 print()
-a=findEulerTour(G)
-for i in a:
-    print(i)
-#print(findOddNodes(G))
-#print(G.edges)
+print(findEuler(G))
+print()
+for j in G.edges:
+    print(j)
