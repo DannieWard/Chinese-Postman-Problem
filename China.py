@@ -31,6 +31,26 @@ def giveGraphEvenNodes(graph):
         oddNodes.pop(0) #removes the other node
     return graph #returns the new graph with even nodes
 
+def eulerize(graph):
+    """given a graph, this function uses networkx's find shortest path function to duplicated
+    specific edges to give each graph an even degree by duplicating the least edges possible"""
+    odds=findOddNodes(graph)
+    while len(odds)!=0: #as long as there are odd nodes remaining
+        pathDict=nx.shortest_path(graph, odds[0]) #creates a dictionary of the shortest path to all the nodes
+        shortest=("A", 20) #second element must be arbitrarily large
+        for j in pathDict.keys(): #goes through the dictionary
+            if j==odds[0]: #skips the nodes path to itself since it is not useful
+                continue
+            if j in odds and len(pathDict[j])<shortest[1]: 
+                #if the ending node is odd and has a shorter length than our current shortest path
+                shortest=(j, len(pathDict[j]))
+        path=nx.shortest_path(graph, odds[0], shortest[0]) #this is our shortest path between odd nodes
+        odds.pop(0) #removes both nodes from the odd nodes list
+        odds.remove(shortest[0])
+        for k in range(len(path)-1): #adds the new edges from the shortest path
+            graph.add_edge(path[k], path[k+1])
+    return graph
+
 def buildEvenGraph(minNodes, maxNodes):
     """ uses the findNodes() function and giveGraphEvenNodes() to create an even graph
     that has a Euler tour"""
@@ -47,7 +67,7 @@ def buildEvenGraph(minNodes, maxNodes):
             while otherNodeIndex==i: #makes sure the node isnt connecting to itself
                 otherNodeIndex=random.randint(0, numberOfNodes-1)
             G.add_edge(list(G.nodes)[i], list(G.nodes)[otherNodeIndex]) #adds the edge
-    giveGraphEvenNodes(G)
+    eulerize(G)
     nx.draw(G, with_labels=True)
     plt.show(G)
     return G
@@ -108,16 +128,9 @@ def findEuler(graph):
         for i in finalPath: #go through every node in the final path
             if i in startNodes: #if the node is the starting nodes of one of the paths we have
                 pos=startNodes.index(i)
-                finalPath=finalPath[0:finalPath.index(i)]+pathList.pop(pos)+finalPath[finalPath.index(i)+1:] #add the path in
+#                finalPath=finalPath[0:finalPath.index(i)]+pathList.pop(pos)+finalPath[finalPath.index(i)+1:] #add the path in
                 startNodes.pop(pos) #remove it from the startNodes list so we aren't looking for it anymore
     return finalPath
     
     
-G=buildEvenGraph(6, 12)
-for i in G.edges:
-    print(i)
-print()
-print(findEuler(G))
-print()
-for j in G.edges:
-    print(j)
+G=buildEvenGraph(20, 25)
