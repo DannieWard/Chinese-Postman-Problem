@@ -1,6 +1,7 @@
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
+from timeit import default_timer as timer
 
 def findOddNodes(graph):
     """takes a multigraph as an input and returns a list of nodes that
@@ -54,8 +55,9 @@ def eulerize(graph):
 def buildEvenGraph(minNodes, maxNodes):
     """ uses the findNodes() function and giveGraphEvenNodes() to create an even graph
     that has a Euler tour"""
+    global start
     numberOfNodes=random.randint(minNodes, maxNodes) #picks a random number of nodes between the two parameters
-    alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+-=[]{}\|;:/?.>,<'
     G=nx.MultiGraph()
     print('Number of Nodes: '+str(numberOfNodes))
     for i in range(numberOfNodes):
@@ -67,7 +69,10 @@ def buildEvenGraph(minNodes, maxNodes):
             while otherNodeIndex==i: #makes sure the node isnt connecting to itself
                 otherNodeIndex=random.randint(0, numberOfNodes-1)
             G.add_edge(list(G.nodes)[i], list(G.nodes)[otherNodeIndex]) #adds the edge
+    numberOfEdges=len(G.edges)
+    start=timer()
     eulerize(G)
+    print(str(len(G.edges)-numberOfEdges)+" edges were added to make the graph even.")
     nx.draw(G, with_labels=True)
     plt.show(G)
     return G
@@ -128,9 +133,13 @@ def findEuler(graph):
         for i in finalPath: #go through every node in the final path
             if i in startNodes: #if the node is the starting nodes of one of the paths we have
                 pos=startNodes.index(i)
-#                finalPath=finalPath[0:finalPath.index(i)]+pathList.pop(pos)+finalPath[finalPath.index(i)+1:] #add the path in
+                finalPath=finalPath[0:finalPath.index(i)]+pathList.pop(pos)+finalPath[finalPath.index(i)+1:] #add the path in
                 startNodes.pop(pos) #remove it from the startNodes list so we aren't looking for it anymore
     return finalPath
     
-    
-G=buildEvenGraph(20, 25)
+start=0
+G=buildEvenGraph(50, 60)
+eulerize(G)
+print(findEuler(G))
+elapsed_time = timer() - start
+print("The program took " +str(elapsed_time)+ " seconds to run.")
