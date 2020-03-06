@@ -1,6 +1,7 @@
 import networkx as nx
 import random
 import matplotlib.pyplot as plt
+import time
 from timeit import default_timer as timer
 
 def findOddNodes(graph):
@@ -56,12 +57,16 @@ def buildEvenGraph(minNodes, maxNodes):
     """ uses the findNodes() function and giveGraphEvenNodes() to create an even graph
     that has a Euler tour"""
     global start
+    global pausedTime
     numberOfNodes=random.randint(minNodes, maxNodes) #picks a random number of nodes between the two parameters
-    alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+-=[]{}\|;:/?.>,<'
+    possibleNodes=[]
+    for k in range(1000):
+        possibleNodes.append(str(k))
+#    alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()_+-=[]{}\|;:/?.>,<'
     G=nx.MultiGraph()
     print('Number of Nodes: '+str(numberOfNodes))
     for i in range(numberOfNodes):
-        G.add_node(alphabet[i]) #adds the nodes by going through alphabet
+        G.add_node(possibleNodes[i]) #adds the nodes by going through alphabet
     for i in range(len(G.nodes)):
         for j in range(2):
             #gets a random number to represent the edge the node will connect to
@@ -72,9 +77,11 @@ def buildEvenGraph(minNodes, maxNodes):
     numberOfEdges=len(G.edges)
     start=timer()
     eulerize(G)
+    a=timer()
     print(str(len(G.edges)-numberOfEdges)+" edges were added to make the graph even.")
     nx.draw(G, with_labels=True)
     plt.show(G)
+    pausedTime=timer()-a
     return G
 
 def getStarterNode(graph):
@@ -138,8 +145,12 @@ def findEuler(graph):
     return finalPath
     
 start=0
-G=buildEvenGraph(50, 60)
+pausedTime=0
+a=time.time()
+G=buildEvenGraph(100, 200)
 eulerize(G)
 print(findEuler(G))
-elapsed_time = timer() - start
-print("The program took " +str(elapsed_time)+ " seconds to run.")
+elapsed_time = timer() - start - pausedTime
+print("The program took " +str(elapsed_time)+ " seconds to run when subtracting time it took to draw the graph.")
+b=time.time()
+print("total time was: "+str(b-a)+ " seconds")
